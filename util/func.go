@@ -30,11 +30,11 @@ func BytesToInt8(data []byte) int {
 	return int(x)
 }
 
-func BytesToInt16(bys []byte) int16 {
+func BytesToInt16(bys []byte) int {
 	binbuf := bytes.NewBuffer(bys)
 	var x int16
 	_ = binary.Read(binbuf, binary.BigEndian, &x)
-	return x
+	return int(x)
 }
 
 func RandomString(l int) string {

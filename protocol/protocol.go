@@ -223,16 +223,20 @@ func pushData(cli *socket.RtspClient, server *socket.RtspServer) {
 	var tmp [][]byte
 
 	for {
+		// 从channel中获取数据
 		d := <-cli.FromChan()
 
 		if len(d) == 1 {
 			break
 		}
 
+		// 如果缓存帧数大于0 需要缓存
 		if server.FrameBuffer > 0 {
+			// 如果临时数组大小和缓存区大小相等 将头部缓存删去
 			if len(tmp) == server.FrameBuffer {
 				tmp = append(tmp[:0], tmp[1:]...)
 			}
+			// 临时数组存储缓存信息
 			tmp = append(tmp, d)
 		}
 
@@ -240,9 +244,12 @@ func pushData(cli *socket.RtspClient, server *socket.RtspServer) {
 		rmflag := false
 
 		cli.PlayersLock.RLock()
+		// 遍历所有的拉流端
 		for _, v := range cli.Players {
+			// 如果播放者并未发送缓存 则把缓存发送给对方
 			if server.FrameBuffer > 0 && cli.HasSend == false {
 				cli.HasSend = true
+				// 将缓存中的数据发送给对方
 				for _, data := range tmp {
 					_, e := v.Conn.Write(data)
 					if e != nil {
@@ -291,28 +298,27 @@ func detailData(buf []byte, cli *socket.RtspClient) int {
 		}
 
 		ln := util.BytesToInt16(msgbytes0[2:4])
-		lnn := int(ln)
 		bl := util.BytesToInt8(msgbytes0[1:2])
 
 		if bl >= 200 && bl <= 207 {
-			//RTCP包，推送端推送会话质量信息
-			fmt.Println(bl)
+			// RTCP包 推送端推送会话质量信息
+			log.Println(bl)
 		}
 
-		if lnn < 0 || lnn > 20000 {
+		if ln < 0 || ln > 20000 {
 			cli.LastRecvBuf = []byte{}
 			break
 		}
-		if lnn+4 > len(msgbytes0) {
+		if ln+4 > len(msgbytes0) {
 			cli.LastRecvBuf = msgbytes0
 			break
 		}
-		if lnn+4 == len(msgbytes0) {
+		if ln+4 == len(msgbytes0) {
 			sendbytes = util.BytesCombine(sendbytes, msgbytes0)
 			cli.LastRecvBuf = []byte{}
 			break
 		}
-		if lnn+4 < len(msgbytes0) {
+		if ln+4 < len(msgbytes0) {
 			sendbytes = util.BytesCombine(sendbytes, msgbytes0[0:4+ln])
 			msgbytes0 = msgbytes0[4+ln:]
 		}

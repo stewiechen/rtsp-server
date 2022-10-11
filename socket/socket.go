@@ -32,13 +32,13 @@ type RtspClient struct {
 	Flag    string //播放端和推流端 客户端标志，Push或Play
 	Channel string //播放端和推流端 对应的rtsp通道
 
-	HasSend bool //播放端 是否已经向播放端推送服务器缓存的RTP信息
+	HasSend bool // 是否已经向拉流端推送服务器缓存的RTP信息
 
-	Players     map[string]*RtspClient //推流端 该频道播放者的信息
-	PlayersLock sync.RWMutex           //推流端 读写锁 Players读写的时候，要加锁
-	RecordStart bool                   //推流端 当推流端开始推流之后 会启动一个协程 用来给该频道的播放端推送RTP消息
-	Sdp         string                 //推流端 媒体SDP信息
-	pushChan    chan []byte            //推流端 每接受到推流端的一个RTP消息
+	Players     map[string]*RtspClient // 拉流端信息
+	PlayersLock sync.RWMutex           // 读写锁
+	RecordStart bool                   // 当推流端开始推流之后 会启动一个协程 用来给该频道的播放端推送RTP消息
+	Sdp         string                 // 推流端 媒体SDP信息
+	pushChan    chan []byte            // 推流端 每接受到推流端的一个RTP消息
 }
 
 func (cli *RtspClient) FromChan() <-chan []byte {

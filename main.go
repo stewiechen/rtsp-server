@@ -1,11 +1,13 @@
 package main
 
 import (
+	"rtsp/conf"
 	"rtsp/protocol"
 	rtsp "rtsp/socket"
 )
 
 func main() {
-	server := rtsp.NewRtspServer("rtsp server", 8080, 60)
+	config := conf.NewConfig("rtsp.json")
+	server := rtsp.NewRtspServer("rtsp server", config.Port, config.FrameBuffer)
 	server.Run(protocol.Handle)
 }
