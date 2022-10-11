@@ -220,12 +220,15 @@ func commonBefore(buf []byte, doType string, cli *socket.RtspClient) []string {
 }
 
 func pushData(cli *socket.RtspClient, server *socket.RtspServer) {
-	var tmp [][]byte
+	// 缓存帧数 可以给拉流端迅速响应
+	var cache [][]byte
 
+	// 循环处理数据
 	for {
 		// 从channel中获取数据
 		d := <-cli.FromChan()
 
+		// 读取到一个字符 代表关闭
 		if len(d) == 1 {
 			break
 		}
@@ -233,24 +236,25 @@ func pushData(cli *socket.RtspClient, server *socket.RtspServer) {
 		// 如果缓存帧数大于0 需要缓存
 		if server.FrameBuffer > 0 {
 			// 如果临时数组大小和缓存区大小相等 将头部缓存删去
-			if len(tmp) == server.FrameBuffer {
-				tmp = append(tmp[:0], tmp[1:]...)
+			if len(cache) == server.FrameBuffer {
+				cache = append(cache[:0], cache[1:]...)
 			}
 			// 临时数组存储缓存信息
-			tmp = append(tmp, d)
+			cache = append(cache, d)
 		}
 
+		// 表示要剔除的拉流端
 		removes := []string{}
 		rmflag := false
 
 		cli.PlayersLock.RLock()
 		// 遍历所有的拉流端
 		for _, v := range cli.Players {
-			// 如果播放者并未发送缓存 则把缓存发送给对方
+			// 如果有缓存且并未向拉流端发送缓存 则把缓存发送给对方
 			if server.FrameBuffer > 0 && cli.HasSend == false {
 				cli.HasSend = true
 				// 将缓存中的数据发送给对方
-				for _, data := range tmp {
+				for _, data := range cache {
 					_, e := v.Conn.Write(data)
 					if e != nil {
 						removes = append(removes, v.Addr)
@@ -262,6 +266,7 @@ func pushData(cli *socket.RtspClient, server *socket.RtspServer) {
 
 			_, err := v.Conn.Write(d)
 
+			// 发生异常则将该拉流端剔除
 			if err != nil {
 				removes = append(removes, v.Addr)
 				rmflag = true
