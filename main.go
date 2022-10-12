@@ -1,9 +1,9 @@
 package main
 
 import (
-	"rtsp/conf"
-	"rtsp/protocol"
-	rtsp "rtsp/socket"
+	"rtsp-server/conf"
+	"rtsp-server/protocol"
+	rtsp "rtsp-server/socket"
 )
 
 func main() {

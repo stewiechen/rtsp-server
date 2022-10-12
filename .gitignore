@@ -3,3 +3,4 @@
 **/*.exe
 rtsp.json
 rtsp
+rtsp-server

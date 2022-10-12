@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"rtsp/socket"
-	"rtsp/util"
+	"rtsp-server/socket"
+	"rtsp-server/util"
 	"strconv"
 	"strings"
 )
