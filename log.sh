@@ -1,0 +1,1 @@
+tail -f -n 100 rtsp-server.log
