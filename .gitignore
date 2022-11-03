@@ -5,3 +5,4 @@ rtsp.json
 rtsp
 rtsp-server
 **/*.log
+**/*.pid
