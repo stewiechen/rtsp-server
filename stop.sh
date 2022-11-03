@@ -1,0 +1,1 @@
+kill -15 $(cat rtsp-server.pid)
